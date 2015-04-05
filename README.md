@@ -1,4 +1,5 @@
-### Seamlessly edit an html file using markdown. ###
+# Changed to work with org mode!!
+### Seamlessly edit an html file using org-mode. ###
 
 **H**TML **a**s **M**arkdown.
 
