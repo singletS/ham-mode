@@ -71,8 +71,8 @@
 ;; 1.1   - 2013/12/07 - ham-mode-md2html-hook.
 ;; 1.0   - 2013/12/05 - Created File.
 ;;; Code:
-(require 'html-to-markdown)
-(require 'markdown-mode)
+;;(require 'html-to-markdown)
+;;(require 'markdown-mode)
 
 (defconst ham-mode-version "1.1.1" "Version of the ham-mode.el package.")
 (defconst ham-mode-version-int 3 "Version of the ham-mode.el package, as an integer.")
@@ -90,9 +90,9 @@ Please include your emacs and ham-mode versions."
 (defcustom ham-mode-markdown-to-html-command
   (if (executable-find "pandoc")
       (list (executable-find "pandoc")
-            "--from" "markdown"
+            "--from" "org"
             "--to" "html"
-            'file)
+            "--standalone" 'file)
     (list (or (executable-find "markdown")
               (executable-find "Markdown"))
           ;; "--html4tags"
@@ -116,34 +116,34 @@ If your executable isn't generating good results (some don't
 support all features) you can try to install pandoc and set this
 variable to:
 
-    '(\"pandoc\" \"--from\" \"markdown\" \"--to\" \"html\" file)"
+    '(\"pandoc\" \"--from\" \"markdown\" \"--to\" \"html\" \"--standalone\" file)"
   :type '(cons (string :tag "Path to the markdown command")
                (repeat (choice (const :tag "The file being edited" file)
                                (string :tag "String argument"))))
   :group 'html-to-markdown
   :package-version '(ham-mode . "1.1.1"))
 (put 'ham-mode-markdown-to-html-command 'risky-local-variable-p t)
-(defvaralias 'ham-mode-markdown-command 'ham-mode-markdown-to-html-command)
 
 (defcustom ham-mode-html-to-markdown-command
-  'html-to-markdown-this-buffer
+  (if (executable-find "pandoc")
+      (list (executable-find "pandoc")
+            "--from" "html"
+            "--to" "org"
+            "--standalone" 'file)
+    nil)
   "Command used to convert html contents into markdown.
-This variable is either:
 
-1) a function, which will be called with no arguments and is
-expected to convert the current buffer from html format to
-markdown format.
-
-2) a list which represents an external command to be run:
-  - First element is the full path to the executable.
-  - Other elements are either the symbol 'file (which is replaced with the
+This variable is either nil, which means that the
+html-to-markdown elisp package will be used instead of an
+external command, or a list in which:
+  - First element is the full path to the markdown executable.
+  - Other elements are either the symbol 'file (replaced with the
     filename) or strings (arguments to the passed to the executable).
-  This command is expected to convert the file from html to markdown.
 
-If you have Pandoc installed, for instance, you could set this
-variable to:
+If you want an external html to markdown converter you can try to
+install pandoc and set this variable to:
 
-    '(\"pandoc\" \"--from\" \"html\" \"--to\" \"markdown\" file)"
+    '(\"pandoc\" \"--from\" \"html\" \"--to\" \"markdown\" \"--standalone\" file)"
   :type '(choice (const :tag "Use the html-to-markdown package" nil)
                  (cons :tag "Use external command"
                        (string :tag "Path to the html to markdown converter")
@@ -202,21 +202,19 @@ the current buffer."
   (run-hook-with-args 'ham-mode-md2html-hook (buffer-file-name)))
 
 (defun ham-mode--convert-to-markdown ()
-  (if (listp ham-mode-html-to-markdown-command)
+  (if ham-mode-html-to-markdown-command
       (save-excursion
         (erase-buffer)
         (insert
          (ham-mode--run-conversion ham-mode-html-to-markdown-command))
         (goto-char (point-min)))
     ;; no external command, default to using the html-to-markdown package
-    (if (fboundp ham-mode-html-to-markdown-command)
-        (funcall ham-mode-html-to-markdown-command)
-      (error "`%s' should be a list or a function"
-             'ham-mode-html-to-markdown-command)))
+    ;;(html-to-markdown-this-buffer)
+    )
   (set-buffer-modified-p nil))
 
 ;;;###autoload
-(define-derived-mode ham-mode markdown-mode "Ham"
+(define-derived-mode ham-mode org-mode "Ham"
   "Html As Markdown. Transparently edit an html file using markdown.
 
 When this mode is activated in an html file, the buffer is
