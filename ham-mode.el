@@ -91,8 +91,8 @@ Please include your emacs and ham-mode versions."
   (if (executable-find "pandoc")
       (list (executable-find "pandoc")
             "--from" "org"
-            "--to" "html"
-            "--standalone" 'file)
+            "--to" "html" ;; "--standalone"
+	    'file)
     (list (or (executable-find "markdown")
               (executable-find "Markdown"))
           ;; "--html4tags"
@@ -129,7 +129,7 @@ variable to:
       (list (executable-find "pandoc")
             "--from" "html"
             "--to" "org"
-            "--standalone" 'file)
+	    'file)
     nil)
   "Command used to convert html contents into markdown.
 
