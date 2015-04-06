@@ -1,3 +1,4 @@
+# ham-org branch uses org-mode instead of markdown.
 ### Seamlessly edit an html file using markdown. ###
 
 **H**TML **a**s **M**arkdown.
